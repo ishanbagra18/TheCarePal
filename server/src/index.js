@@ -68,6 +68,22 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded photos statically
 app.use('/uploads', express.static(uploadsDir));
 
+// Root landing route for health & deployment verification
+app.get('/', (req, res) => {
+  res.json({
+    service: 'TheCarePal API Server',
+    status: 'online',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      demoAccounts: '/api/auth/demo-accounts',
+      login: 'POST /api/auth/login',
+    },
+    message: 'TheCarePal backend is running successfully. Connect your Vercel frontend by setting VITE_API_URL to this URL + /api'
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'TheCarePal API', timestamp: new Date().toISOString() });
