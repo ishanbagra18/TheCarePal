@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, Image as ImageIcon, Upload, Trash2, X } from 'lucide-react';
 import { formatTimeIST } from '../../utils/date';
-import api from '../../api/client';
+import api, { getAssetUrl } from '../../api/client';
 
 export default function PhotosTab({ patientId, selectedDate, photos = [], onRefresh, showToast }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -176,7 +176,7 @@ export default function PhotosTab({ patientId, selectedDate, photos = [], onRefr
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {photos.map((p) => (
               <div key={p.id} className="relative rounded-xl overflow-hidden border border-slate-200 group bg-slate-50">
-                <img src={p.file_path} alt={p.caption || 'Care photo'} className="w-full h-32 object-cover" />
+                <img src={getAssetUrl(p.file_path)} alt={p.caption || 'Care photo'} className="w-full h-32 object-cover" />
                 <div className="p-2">
                   <div className="text-[11px] font-bold text-slate-800 truncate">
                     {p.caption || `${p.category} photo`}

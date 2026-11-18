@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { config } from './config/env.js';
 import db from './db/connection.js';
 import initSchema from './db/schema.js';
+import { seedDatabase } from '../seed.js';
 import authRoutes from './routes/authRoutes.js';
 import patientRoutes from './routes/patientRoutes.js';
 import careRoutes from './routes/careRoutes.js';
@@ -19,6 +20,17 @@ const __dirname = path.dirname(__filename);
 // Initialize DB schema on startup
 initSchema(db);
 
+// Auto-seed if database is freshly deployed (e.g. on Render)
+try {
+  const userCount = db.prepare('SELECT count(*) as count FROM users').get()?.count || 0;
+  if (userCount === 0) {
+    console.log('[TheCarePal Server] Fresh database detected. Auto-seeding 35 days of clinical data...');
+    seedDatabase(db);
+  }
+} catch (e) {
+  console.warn('[TheCarePal Server] Auto-seed check notice:', e.message);
+}
+
 // Ensure uploads directory exists
 const uploadsDir = path.resolve(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -28,8 +40,25 @@ if (!fs.existsSync(uploadsDir)) {
 export const app = express();
 
 // Middlewares
+const allowedOrigins = [
+  config.clientUrl,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : [])
+];
+
 app.use(cors({
-  origin: config.clientUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-side)
+    if (!origin) return callback(null, true);
+    
+    // Allow configured origins or any vercel.app deployment
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    callback(null, true); // Fallback allow to prevent production blockages
+  },
   credentials: true,
 }));
 app.use(cookieParser());

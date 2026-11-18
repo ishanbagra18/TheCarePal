@@ -63,11 +63,12 @@ export async function login(req, res, next) {
 
     const token = signToken(user);
 
-    // Set secure httpOnly cookie
+    // Set secure cookie (sameSite: 'none' and secure: true in production for cross-origin Vercel <-> Render)
+    const isProd = config.nodeEnv === 'production';
     res.cookie('carepal_token', token, {
       httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'lax',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -96,10 +97,11 @@ export async function login(req, res, next) {
  * Logout handler
  */
 export function logout(req, res) {
+  const isProd = config.nodeEnv === 'production';
   res.clearCookie('carepal_token', {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: config.nodeEnv === 'production',
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd,
   });
   res.json({ message: 'Logged out successfully' });
 }

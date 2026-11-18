@@ -15,6 +15,7 @@ import {
   Camera
 } from 'lucide-react';
 import { formatTimeIST } from '../../utils/date';
+import { getAssetUrl } from '../../api/client';
 
 const CATEGORY_META = {
   vital: {
@@ -216,7 +217,7 @@ export default function CareTimeline({ timeline = [], selectedDate }) {
                   {item.category === 'photo' && item.file_path && (
                     <div className="mt-2.5 rounded-xl overflow-hidden max-w-xs border border-slate-200 bg-black/5 shadow-sm">
                       <img
-                        src={item.file_path}
+                        src={getAssetUrl(item.file_path)}
                         alt={item.caption || 'Care photo'}
                         className="w-full h-44 object-cover"
                       />

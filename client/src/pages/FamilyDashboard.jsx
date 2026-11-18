@@ -36,8 +36,11 @@ export default function FamilyDashboard() {
     setDownloadingPdf(true);
     try {
       const token = localStorage.getItem('carepal_token');
-      const response = await fetch(`/api/patients/${activePatient.id}/reports/pdf?days=30`, {
+      const rawBase = import.meta.env.VITE_API_URL || '/api';
+      const baseUrl = rawBase.replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/patients/${activePatient.id}/reports/pdf?days=30`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to generate PDF report');
 

@@ -1,37 +1,39 @@
 import bcrypt from 'bcryptjs';
+import { fileURLToPath } from 'url';
 import db from './src/db/connection.js';
 import initSchema from './src/db/schema.js';
 import { checkVitalRange } from './src/config/normalRanges.js';
 
-console.log('🔄 Wiping and recreating TheCarePal database with 35 days of synthetic data...');
+export function seedDatabase(targetDb = db) {
+  console.log('🔄 Initializing and seeding TheCarePal database with 35 days of synthetic data...');
 
-// Reset tables
-initSchema(db);
+  // Reset tables
+  initSchema(targetDb);
 
-db.exec(`
-  DELETE FROM alerts;
-  DELETE FROM photos;
-  DELETE FROM observations;
-  DELETE FROM mood_entries;
-  DELETE FROM activities;
-  DELETE FROM medicine_doses;
-  DELETE FROM medicine_schedule;
-  DELETE FROM water_intake;
-  DELETE FROM meals;
-  DELETE FROM vitals;
-  DELETE FROM family_links;
-  DELETE FROM care_assignments;
-  DELETE FROM patients;
-  DELETE FROM users;
-`);
+  targetDb.exec(`
+    DELETE FROM alerts;
+    DELETE FROM photos;
+    DELETE FROM observations;
+    DELETE FROM mood_entries;
+    DELETE FROM activities;
+    DELETE FROM medicine_doses;
+    DELETE FROM medicine_schedule;
+    DELETE FROM water_intake;
+    DELETE FROM meals;
+    DELETE FROM vitals;
+    DELETE FROM family_links;
+    DELETE FROM care_assignments;
+    DELETE FROM patients;
+    DELETE FROM users;
+  `);
 
-// 1. Create Demo Users
-const passwordHash = bcrypt.hashSync('Demo@123', 10);
+  // 1. Create Demo Users
+  const passwordHash = bcrypt.hashSync('Demo@123', 10);
 
-const insertUser = db.prepare(`
-  INSERT INTO users (id, name, email, password_hash, role, phone)
-  VALUES (@id, @name, @email, @password_hash, @role, @phone)
-`);
+  const insertUser = targetDb.prepare(`
+    INSERT INTO users (id, name, email, password_hash, role, phone)
+    VALUES (@id, @name, @email, @password_hash, @role, @phone)
+  `);
 
 const users = [
   { id: 'user-nurse-1', name: 'Nurse Priya Sharma', email: 'nurse1@demo.com', password_hash: passwordHash, role: 'nurse', phone: '+91 98765 43210' },
@@ -494,4 +496,12 @@ for (let dayOffset = 34; dayOffset >= 0; dayOffset--) {
 
 console.log('✅ Generated 35 days of history for all 3 patients across all care categories');
 console.log('🎉 Seed complete! Database is fully populated and ready.');
+}
+
+// Auto-run if executed as CLI entrypoint
+if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
+  seedDatabase();
+}
+
+export default seedDatabase;
 

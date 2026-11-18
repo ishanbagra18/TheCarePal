@@ -4,10 +4,12 @@
  * and passes credentials for httpOnly cookies.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const rawBase = import.meta.env.VITE_API_URL || '/api';
+const BASE_URL = rawBase.replace(/\/+$/, '');
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('carepal_token');
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
   const headers = {
     ...options.headers,
@@ -27,7 +29,7 @@ export async function apiRequest(endpoint, options = {}) {
     credentials: 'include', // Send httpOnly cookies
   };
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, config);
+  const response = await fetch(`${BASE_URL}${cleanEndpoint}`, config);
 
   // If response is unauthorized, clear token
   if (response.status === 401 && !endpoint.includes('/auth/login')) {
@@ -60,6 +62,25 @@ export const api = {
   put: (url, body) => apiRequest(url, { method: 'PUT', body: body instanceof FormData ? body : JSON.stringify(body) }),
   delete: (url) => apiRequest(url, { method: 'DELETE' }),
 };
+
+/**
+ * Resolves static asset URLs (such as uploaded photos) across different hosts
+ * (e.g. frontend on Vercel and backend on Render).
+ */
+export function getAssetUrl(filePath) {
+  if (!filePath) return '';
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) return filePath;
+  const raw = import.meta.env.VITE_API_URL || '';
+  if (raw.startsWith('http')) {
+    try {
+      const url = new URL(raw);
+      return `${url.origin}${filePath.startsWith('/') ? filePath : `/${filePath}`}`;
+    } catch (e) {
+      return filePath;
+    }
+  }
+  return filePath;
+}
 
 export default api;
 
