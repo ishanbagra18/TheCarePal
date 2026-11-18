@@ -1,0 +1,17 @@
+{
+  "name": "thecarepal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "setup": "npm install && npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "test": "npm run test --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
+

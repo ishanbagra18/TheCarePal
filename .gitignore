@@ -1,0 +1,28 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Databases & Uploads
+*.db*
+*.sqlite*
+uploads/
+server/uploads/
+
+# Build artifacts
+dist/
+build/
+.cache/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
